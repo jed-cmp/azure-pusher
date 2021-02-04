@@ -8,21 +8,24 @@ import com.google.firebase.messaging.RemoteMessage
 import com.pusher.pushnotifications.PushNotificationReceivedListener
 import com.pusher.pushnotifications.PushNotifications
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_main.*
+import jed.cmp.azurepusher.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         PushNotifications.start(applicationContext, "04374500-fb5e-41b6-9bbe-9acb3ee2e174")
         PushNotifications.addDeviceInterest("debug-hello")
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
         Picasso
             .get()
             .load("https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Supermoon_Nov-14-2016-minneapolis.jpg/1200px-Supermoon_Nov-14-2016-minneapolis.jpg")
-            .into(imageView)
+            .into(binding.imageView)
     }
 
     override fun onResume() {
@@ -37,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                         uiHandler.post {
                             Picasso.get()
                                 .load(imageUrl)
-                                .into(imageView)
+                                .into(binding.imageView)
                         }
                     }
                 }
