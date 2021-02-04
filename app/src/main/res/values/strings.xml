@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AzurePusher</string>
+    <string name="content_description">Notification Image</string>
 </resources>
