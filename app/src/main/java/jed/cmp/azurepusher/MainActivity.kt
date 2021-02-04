@@ -12,6 +12,7 @@ import jed.cmp.azurepusher.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
+    private var imageUrlKey = "image-url"
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,10 +23,15 @@ class MainActivity : AppCompatActivity() {
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
         setContentView(binding.root)
-        Picasso
-            .get()
-            .load("https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Supermoon_Nov-14-2016-minneapolis.jpg/1200px-Supermoon_Nov-14-2016-minneapolis.jpg")
-            .into(binding.imageView)
+        if (intent.extras != null) {
+            val imageUrl = intent.extras!!.getString(imageUrlKey)
+            if (!isNullOrEmpty(imageUrl)) {
+                Picasso
+                    .get()
+                    .load(imageUrl)
+                    .into(binding.imageView)
+            }
+        }
     }
 
     override fun onResume() {
@@ -34,8 +40,8 @@ class MainActivity : AppCompatActivity() {
             this,
             object : PushNotificationReceivedListener {
                 override fun onMessageReceived(remoteMessage: RemoteMessage) {
-                    val imageUrl = remoteMessage.data["image-url"]
-                    if (imageUrl != null) {
+                    val imageUrl = remoteMessage.data[imageUrlKey]
+                    if (!isNullOrEmpty(imageUrl)) {
                         val uiHandler = Handler(Looper.getMainLooper())
                         uiHandler.post {
                             Picasso.get()
@@ -45,5 +51,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             })
+    }
+
+    fun isNullOrEmpty(str: String?): Boolean {
+        if (str != null && str.trim().isNotEmpty())
+            return false
+        return true
     }
 }
