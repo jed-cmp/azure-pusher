@@ -25,9 +25,14 @@ class MainActivity : AppCompatActivity() {
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
         setContentView(binding.root)
         val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
-        val preferenceImageUrl = sharedPref.getString(getString(R.string.preference_image_url_key), getString(R.string.default_image_url))
-        val notificationImageUrl = if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
-        val imageUrl = if (!isNullOrEmpty(notificationImageUrl)) notificationImageUrl else preferenceImageUrl
+        val preferenceImageUrl = sharedPref.getString(
+            getString(R.string.preference_image_url_key),
+            getString(R.string.default_image_url)
+        )
+        val notificationImageUrl =
+            if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
+        val imageUrl =
+            if (!isNullOrEmpty(notificationImageUrl)) notificationImageUrl else preferenceImageUrl
         savePrefAndLoadImage(imageUrl!!)
     }
 
@@ -37,7 +42,8 @@ class MainActivity : AppCompatActivity() {
             this,
             object : PushNotificationReceivedListener {
                 override fun onMessageReceived(remoteMessage: RemoteMessage) {
-                    val imageUrl = remoteMessage.data[getString(R.string.notification_image_url_key)]
+                    val imageUrl =
+                        remoteMessage.data[getString(R.string.notification_image_url_key)]
                     if (!isNullOrEmpty(imageUrl)) {
                         val uiHandler = Handler(Looper.getMainLooper())
                         uiHandler.post {
@@ -56,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     fun savePrefAndLoadImage(imageUrl: String) {
         val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
-        with (sharedPref.edit()) {
+        with(sharedPref.edit()) {
             putString(getString(R.string.preference_image_url_key), imageUrl)
             apply()
         }
