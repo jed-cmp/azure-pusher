@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">AzurePusher</string>
     <string name="content_description">Notification Image</string>
+    <string name="notification_image_url_key">image-url</string>
+    <string name="preference_image_url_key">jed.cmp.azurepusher.PREFERENCE_IMAGE_URL_KEY</string>
+    <string name="default_image_url">https://www.tradingview.com/x/j7eOcERn/</string>
 </resources>

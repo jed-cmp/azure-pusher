@@ -1,5 +1,7 @@
 package jed.cmp.azurepusher
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,7 +14,6 @@ import jed.cmp.azurepusher.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
-    private var imageUrlKey = "image-url"
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,15 +24,11 @@ class MainActivity : AppCompatActivity() {
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
         setContentView(binding.root)
-        if (intent.extras != null) {
-            val imageUrl = intent.extras!!.getString(imageUrlKey)
-            if (!isNullOrEmpty(imageUrl)) {
-                Picasso
-                    .get()
-                    .load(imageUrl)
-                    .into(binding.imageView)
-            }
-        }
+        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
+        val preferenceImageUrl = sharedPref.getString(getString(R.string.preference_image_url_key), getString(R.string.default_image_url))
+        val notificationImageUrl = if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
+        val imageUrl = if (!isNullOrEmpty(notificationImageUrl)) notificationImageUrl else preferenceImageUrl
+        savePrefAndLoadImage(imageUrl!!)
     }
 
     override fun onResume() {
@@ -40,13 +37,11 @@ class MainActivity : AppCompatActivity() {
             this,
             object : PushNotificationReceivedListener {
                 override fun onMessageReceived(remoteMessage: RemoteMessage) {
-                    val imageUrl = remoteMessage.data[imageUrlKey]
+                    val imageUrl = remoteMessage.data[getString(R.string.notification_image_url_key)]
                     if (!isNullOrEmpty(imageUrl)) {
                         val uiHandler = Handler(Looper.getMainLooper())
                         uiHandler.post {
-                            Picasso.get()
-                                .load(imageUrl)
-                                .into(binding.imageView)
+                            savePrefAndLoadImage(imageUrl!!)
                         }
                     }
                 }
@@ -57,5 +52,17 @@ class MainActivity : AppCompatActivity() {
         if (str != null && str.trim().isNotEmpty())
             return false
         return true
+    }
+
+    fun savePrefAndLoadImage(imageUrl: String) {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
+        with (sharedPref.edit()) {
+            putString(getString(R.string.preference_image_url_key), imageUrl)
+            apply()
+        }
+        Picasso
+            .get()
+            .load(imageUrl)
+            .into(binding.imageView)
     }
 }
