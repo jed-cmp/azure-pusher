@@ -1,7 +1,6 @@
 package jed.cmp.azurepusher
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
