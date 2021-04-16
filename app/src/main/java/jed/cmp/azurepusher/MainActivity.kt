@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.azure.data.AzureData
+import com.azure.data.model.PermissionMode
 import com.google.firebase.messaging.RemoteMessage
 import com.pusher.pushnotifications.PushNotificationReceivedListener
 import com.pusher.pushnotifications.PushNotifications
@@ -18,11 +20,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        AzureData.configure(applicationContext, getString(R.string.azure_db_name), getString(R.string.azure_db_key), PermissionMode.Read)
         PushNotifications.start(applicationContext, "04374500-fb5e-41b6-9bbe-9acb3ee2e174")
         PushNotifications.addDeviceInterest("debug-hello")
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
         setContentView(binding.root)
+        AzureData.getDocument ("ethereum-gas-price", "ethereum-gas-price", "Records", "Notification", ImageDocument::class.java) {
+            val document = it.resource
+        }
+
         val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
         val preferenceImageUrl = sharedPref.getString(
             getString(R.string.preference_image_url_key),
