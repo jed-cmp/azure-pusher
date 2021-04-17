@@ -21,7 +21,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        AzureData.configure(applicationContext, getString(R.string.azure_db_name), getString(R.string.azure_db_key), PermissionMode.Read)
+        AzureData.configure(
+            applicationContext,
+            getString(R.string.azure_db_name),
+            getString(R.string.azure_db_key),
+            PermissionMode.Read
+        )
         PushNotifications.start(applicationContext, "04374500-fb5e-41b6-9bbe-9acb3ee2e174")
         PushNotifications.addDeviceInterest("debug-hello")
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
@@ -58,18 +63,27 @@ class MainActivity : AppCompatActivity() {
         val notificationImageUrl =
             if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
 
-        AzureData.getDocument ("market-snapshot", "market-snapshot", "Snapshots", "Trading", ImageDocument::class.java) {
-            response ->  imageHandler(response, notificationImageUrl, preferenceImageUrl)
+        AzureData.getDocument(
+            "market-snapshot",
+            "market-snapshot",
+            "Snapshots",
+            "Trading",
+            ImageDocument::class.java
+        ) { response ->
+            imageHandler(response, notificationImageUrl, preferenceImageUrl)
         }
     }
 
-    private fun imageHandler(response: Response<ImageDocument>, notificationImageUrl: String?, preferenceImageUrl: String) {
+    private fun imageHandler(
+        response: Response<ImageDocument>,
+        notificationImageUrl: String?,
+        preferenceImageUrl: String
+    ) {
         if (!isNullOrEmpty(notificationImageUrl)) {
             this@MainActivity.runOnUiThread {
                 savePrefAndLoadImage(notificationImageUrl!!)
             }
-        }
-        else if (response.isSuccessful) {
+        } else if (response.isSuccessful) {
             val cosmosImageUrl = response.resource?.imageUrl!!
             this@MainActivity.runOnUiThread {
                 savePrefAndLoadImage(cosmosImageUrl)
