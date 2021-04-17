@@ -7,6 +7,7 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.azure.data.AzureData
 import com.azure.data.model.PermissionMode
+import com.azure.data.model.service.Response
 import com.google.firebase.messaging.RemoteMessage
 import com.pusher.pushnotifications.PushNotificationReceivedListener
 import com.pusher.pushnotifications.PushNotifications
@@ -26,20 +27,8 @@ class MainActivity : AppCompatActivity() {
         PushNotifications.addDeviceInterest("ethereum-gas-prices")
         PushNotifications.addDeviceInterest("alpaca-trading-bot")
         setContentView(binding.root)
-        AzureData.getDocument ("ethereum-gas-price", "ethereum-gas-price", "Records", "Notification", ImageDocument::class.java) {
-            val document = it.resource
-        }
 
-        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
-        val preferenceImageUrl = sharedPref.getString(
-            getString(R.string.preference_image_url_key),
-            getString(R.string.default_image_url)
-        )
-        val notificationImageUrl =
-            if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
-        val imageUrl =
-            if (!isNullOrEmpty(notificationImageUrl)) notificationImageUrl else preferenceImageUrl
-        savePrefAndLoadImage(imageUrl!!)
+        getImage()
     }
 
     override fun onResume() {
@@ -58,6 +47,38 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             })
+    }
+
+    private fun getImage() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
+        val preferenceImageUrl = sharedPref.getString(
+            getString(R.string.preference_image_url_key),
+            getString(R.string.default_image_url)
+        )!!
+        val notificationImageUrl =
+            if (intent.extras != null) intent.extras!!.getString(getString(R.string.notification_image_url_key)) else null
+
+        AzureData.getDocument ("market-snapshot", "market-snapshot", "Snapshots", "Trading", ImageDocument::class.java) {
+            response ->  imageHandler(response, notificationImageUrl, preferenceImageUrl)
+        }
+    }
+
+    private fun imageHandler(response: Response<ImageDocument>, notificationImageUrl: String?, preferenceImageUrl: String) {
+        if (!isNullOrEmpty(notificationImageUrl)) {
+            this@MainActivity.runOnUiThread {
+                savePrefAndLoadImage(notificationImageUrl!!)
+            }
+        }
+        else if (response.isSuccessful) {
+            val cosmosImageUrl = response.resource?.imageUrl!!
+            this@MainActivity.runOnUiThread {
+                savePrefAndLoadImage(cosmosImageUrl)
+            }
+        } else {
+            this@MainActivity.runOnUiThread {
+                savePrefAndLoadImage(preferenceImageUrl)
+            }
+        }
     }
 
     fun isNullOrEmpty(str: String?): Boolean {
